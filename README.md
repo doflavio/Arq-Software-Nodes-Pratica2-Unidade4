@@ -29,3 +29,7 @@ e) 123 / -12
 f) 313123 / 0
 
 Faça os tratamentos necessários em seu código para evitar problemas em tempo de execução
+
+Resultado:
+<img src='./demo/demo-pratica2-unidade4.jpg' />
+
