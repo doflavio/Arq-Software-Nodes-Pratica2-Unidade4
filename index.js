@@ -15,25 +15,29 @@ const server = http.createServer(app);
 const wss = new webSocket.Server({ server });
 
 function operacaoInformada(msg){
-    if(msg.indexOf("+") > -1) return "+";
-    if(msg.indexOf("-") > -1) return "-";
-    if(msg.indexOf("*") > -1) return "*";
-    if(msg.indexOf("/") > -1) return "/";
+    if(msg.indexOf(" + ") > -1) return "+";
+    if(msg.indexOf(" - ") > -1) return "-";
+    if(msg.indexOf(" * ") > -1) return "*";
+    if(msg.indexOf(" / ") > -1) return "/";
     throw `Operacao inválida. Não foi possível encontrar o operador`;
 }
 
 function valoresInformados(msg,operador){
     try {
         const msgSplit = msg.split(operador);
-        const v1 = parseFloat(msgSplit[0]);
-        const v2 = parseFloat(msgSplit[1]);
+        
+        var v1 = msgSplit[0];
+        var v2 = msgSplit[1];
+        if (isNaN(v1)) throw `valor de entrada inválido -> ${v1}`;
+        if (isNaN(v2)) throw `valor de entrada inválido -> ${v2}`;
+        v1 = parseFloat(msgSplit[0]);
+        v2 = parseFloat(msgSplit[1]);
         const valores = [v1,v2];
         return valores;
-    } catch (error) {
-        throw `Não foi possível realizar a operação, não é só de números`;
+    } catch (e) {
+        throw `Erro de operação: ${e}`;
     }
 }
-
 
 // Função responsável por manusear a conexão websocket
 wss.on("connection", (ws) => {
@@ -42,38 +46,33 @@ wss.on("connection", (ws) => {
         console.log("Mensagem recebida: ", msg);
         
         try {
-        /*    
-        const operacao2 = operacaoInformada(msg); 
-        console.log("operação 2: " + operacao2);
-        const valores = valoresInformados(msg,operacao2);
-        console.log("Valores: " + valores[0] + " - " + valores[1]);
-        */
-    
-        const messageSplit = msg.split(' ');
-        const numero1 = parseFloat(messageSplit[0]);
-        const operacao = messageSplit[1];
-        const numero2 = parseFloat( messageSplit[2]);
-        var resultado = 0;
-        switch(operacao) {
-            case '+':
-                resultado = calcular.somar(numero1,numero2);
-                console.log(resultado);
-                break;
-            case '-':
-                resultado = calcular.subtrair(numero1,numero2);
-                console.log(resultado);
-                break;
-            case '*':
-                resultado = calcular.multiplicar(numero1,numero2);
-                console.log(resultado);
-                break;
-            case '/':
-                resultado = calcular.dividir(numero1,numero2);
-                console.log(resultado);
-                break;
-            default:
-                resultado = "Operação Inválida";
-        }
+            
+            const operacao = operacaoInformada(msg); 
+            const valores = valoresInformados(msg,operacao);
+            const numero1 = parseFloat(valores[0]);
+            const numero2 = parseFloat( valores[1]);
+            var resultado = 0;
+            switch(operacao) {
+                case '+':
+                    resultado = calcular.somar(numero1,numero2);
+                    console.log(resultado);
+                    break;
+                case '-':
+                    resultado = calcular.subtrair(numero1,numero2);
+                    console.log(resultado);
+                    break;
+                case '*':
+                    resultado = calcular.multiplicar(numero1,numero2);
+                    console.log(resultado);
+                    break;
+                case '/':
+                    resultado = calcular.dividir(numero1,numero2);
+                    console.log(resultado);
+                    break;
+                default:
+                    resultado = "Operação Inválida";
+            }
+            
             ws.send(resultado);
 
         }catch(e){
@@ -82,8 +81,6 @@ wss.on("connection", (ws) => {
         
   });
 });
-
-
 
 app.use(express.static("./site"));
 
